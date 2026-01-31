@@ -1,28 +1,26 @@
-# Menggunakan base image n8n resmi
+# Menggunakan n8n latest (yang berbasis Debian)
 FROM n8nio/n8n:latest
 
-# Mengubah user ke root untuk install package sistem
 USER root
 
-# Install Chromium dan dependensi yang dibutuhkan Puppeteer
-# Kita menggunakan Alpine repo (karena n8n base-nya seringkali Alpine)
-RUN apk add --no-cache \
+# Gunakan apt-get (Debian) bukan apk (Alpine)
+# Install Chromium dan font yang diperlukan agar tidak kotak-kotak saat render
+RUN apt-get update && apt-get install -y \
     chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    nodejs \
-    npm
+    fonts-ipafont-gothic \
+    fonts-wqy-zenhei \
+    fonts-thai-tlwg \
+    fonts-kacst \
+    fonts-freefont-ttf \
+    libxss1 \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set Environment Variable agar Puppeteer menggunakan Chromium yang kita install
-# dan men-skip download chromium bawaan puppeteer (untuk menghemat space)
+# Setup Environment Variable untuk Puppeteer
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Kembali ke user node (keamanan)
 USER node
 
-# Install puppeteer di folder n8n agar bisa dipanggil
+# Install puppeteer
 RUN npm install puppeteer
